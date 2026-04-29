@@ -97,6 +97,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	tools.RegisterBatchSendTool(server, client)
 	tools.RegisterListReplaySessionsTool(server, client)
 	tools.RegisterGetReplayEntryTool(server, client)
+	tools.RegisterClearSessionCookiesTool(server, client)
+	tools.RegisterGetSessionCookiesTool(server, client)
 
 	// Findings
 	tools.RegisterListFindingsTool(server, client)

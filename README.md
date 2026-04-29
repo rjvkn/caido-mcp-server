@@ -31,7 +31,7 @@ Both share the same auth token, the same Go SDK, and the same codebase.
 | Category | Capabilities |
 |----------|-------------|
 | **Proxy History** | Search requests with HTTPQL, get full request/response details |
-| **Replay** | Send HTTP requests, get response inline (status, headers, body) |
+| **Replay** | Send HTTP requests, get response inline (status, headers, body). Per-session cookie jar auto-persists `Set-Cookie` between calls |
 | **Automate** | Access fuzzing sessions, results, and payloads. Start/pause/resume/cancel tasks |
 | **Findings** | Create, list, delete, and export security findings |
 | **Sitemap** | Browse discovered endpoints |
@@ -47,11 +47,18 @@ Both share the same auth token, the same Go SDK, and the same codebase.
 **Built-in security and performance:**
 
 - Credential redaction - Authorization, Cookie, and API key headers are redacted in tool output
+- Session cookie jar - RFC 6265 jar per replay session; `Set-Cookie` from a response is auto-attached to the next `send_request` against the same session, so authenticated flows (login → wp-admin → action) work without manually copying cookies between calls
 - Input validation - length limits on all string inputs to prevent context flooding
 - Token auto-refresh - expired OAuth tokens refresh mid-session automatically
 - Session reuse - single replay session per server lifetime, no sprawl
 - Body limits - response bodies capped at 2KB by default to save LLM context
 - Minimal tool descriptions - optimized for low token overhead per API call
+
+### Session cookie jar
+
+The `caido_send_request` tool maintains an in-memory `http.CookieJar` per replay session. Cookies set via `Set-Cookie` in any response are stored and auto-injected into subsequent requests targeting the same RFC 6265 domain/path. Pass `useCookieJar: false` to a single call to disable injection (useful for session-fixation testing or to verify auth gates). Use `caido_clear_session_cookies` to wipe a session jar between test runs and `caido_get_session_cookies` to introspect what is stored (cookie values are not returned, only metadata).
+
+The output of `caido_send_request` includes a `cookieJar` block with `injectedCookies` (names sent on this call) and `storedCookies` (names captured from `Set-Cookie`), so the LLM can verify the chain stayed authenticated.
 
 ---
 
@@ -129,15 +136,17 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 "What's in scope?"
 ```
 
-### MCP Tools (34)
+### MCP Tools (37)
 
 | Tool | Description |
 |------|-------------|
 | `caido_list_requests` | List requests with HTTPQL filter and pagination |
 | `caido_get_request` | Get request details (metadata, headers, body). 2KB body limit default |
-| `caido_send_request` | Send HTTP request via Replay, returns response inline. Polls up to 10s |
+| `caido_send_request` | Send HTTP request via Replay, returns response inline. Polls up to 10s. Auto-injects session cookies and persists `Set-Cookie` (toggle with `useCookieJar`) |
 | `caido_list_replay_sessions` | List replay sessions |
 | `caido_get_replay_entry` | Get replay entry with response. 2KB body limit default |
+| `caido_clear_session_cookies` | Wipe the in-memory cookie jar for a replay session |
+| `caido_get_session_cookies` | List metadata for cookies stored in a session jar matching a URL (values not returned) |
 | `caido_list_automate_sessions` | List fuzzing sessions |
 | `caido_get_automate_session` | Get session details with entry list |
 | `caido_get_automate_entry` | Get fuzz results and payloads |
