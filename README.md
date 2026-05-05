@@ -22,7 +22,7 @@
 
 Two ways to interact with your Caido proxy:
 
-- **MCP Server** - expose Caido tools to AI assistants (Claude Code, Cursor, etc.) via the Model Context Protocol
+- **MCP Server** - expose 42 tools and 4 read-only resources to AI assistants (Claude Code, Cursor, etc.) via the Model Context Protocol
 - **CLI** - standalone terminal client for pentesters who prefer the command line
 
 Both share the same auth token, the same Go SDK, and the same codebase.
@@ -43,17 +43,21 @@ Both share the same auth token, the same Go SDK, and the same codebase.
 | **Intercept** | Check status, pause/resume, list/forward/drop intercepted requests |
 | **Environments** | List and switch variable environments (tokens, keys) |
 | **Filters** | List saved HTTPQL filter presets |
+| **Hosted Files** | List payload files served by Caido |
+| **Tasks** | List and cancel running background tasks |
+| **Plugins** | List installed plugin packages |
 | **Instance** | Get Caido version and platform info |
 
 **Built-in security and performance:**
 
 - Credential redaction - Authorization, Cookie, and API key headers are redacted in tool output
-- Session cookie jar - RFC 6265 jar per replay session; `Set-Cookie` from a response is auto-attached to the next `send_request` against the same session, so authenticated flows (login → wp-admin → action) work without manually copying cookies between calls
+- Session cookie jar - RFC 6265 jar per replay session; `Set-Cookie` from a response is auto-attached to the next `send_request` against the same session
+- Response fingerprinting - auto-detects content kind (json/html/xml/text/binary) so agents know what they're dealing with
+- Adaptive body limits - JSON gets 4KB, HTML 3KB, binary 200B (override with explicit `bodyLimit`)
+- Response diff - repeated identical responses in the same session collapse to a one-line summary, saving tokens
 - Input validation - length limits on all string inputs to prevent context flooding
 - Token auto-refresh - expired OAuth tokens refresh mid-session automatically
 - Session reuse - single replay session per server lifetime, no sprawl
-- Body limits - response bodies capped at 2KB by default to save LLM context
-- Minimal tool descriptions - optimized for low token overhead per API call
 
 ### Session cookie jar
 
@@ -137,13 +141,15 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 "What's in scope?"
 ```
 
-### MCP Tools (37)
+### MCP Tools (42)
 
 | Tool | Description |
 |------|-------------|
 | `caido_list_requests` | List requests with HTTPQL filter and pagination |
 | `caido_get_request` | Get request details (metadata, headers, body). 2KB body limit default |
 | `caido_send_request` | Send HTTP request via Replay, returns response inline. Polls up to 10s. Auto-injects session cookies and persists `Set-Cookie` (toggle with `useCookieJar`) |
+| `caido_batch_send` | Send multiple requests in parallel (BAC sweeps, parameter fuzzing, endpoint sweeps). Max 50 per batch |
+| `caido_create_replay_session` | Create a named replay session, optionally seed with a request |
 | `caido_list_replay_sessions` | List replay sessions |
 | `caido_get_replay_entry` | Get replay entry with response. 2KB body limit default |
 | `caido_clear_session_cookies` | Wipe the in-memory cookie jar for a replay session |
@@ -166,6 +172,7 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 | `caido_toggle_workflow` | Enable or disable a workflow |
 | `caido_list_tamper_rules` | List Match & Replace rule collections |
 | `caido_create_tamper_rule` | Create a tamper rule in a collection |
+| `caido_update_tamper_rule` | Update an existing tamper rule |
 | `caido_toggle_tamper_rule` | Enable or disable a tamper rule |
 | `caido_delete_tamper_rule` | Delete a tamper rule |
 | `caido_get_instance` | Get Caido version and platform info |
@@ -177,6 +184,21 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 | `caido_list_environments` | List environments and their variables |
 | `caido_select_environment` | Switch active environment |
 | `caido_list_filters` | List saved HTTPQL filter presets |
+| `caido_list_hosted_files` | List hosted payload files |
+| `caido_list_tasks` | List running background tasks |
+| `caido_cancel_task` | Cancel a running task by ID |
+| `caido_list_plugins` | List installed plugin packages |
+
+### MCP Resources (4)
+
+Read-only data exposed via the MCP resources protocol. Agents can read these without consuming tool calls.
+
+| URI | Description |
+|-----|-------------|
+| `caido://requests/{id}` | Full HTTP request and response for a given request ID |
+| `caido://replay-sessions/{id}` | Replay session details with entry list |
+| `caido://sitemap` | Root domains from the sitemap |
+| `caido://findings` | Security finding summaries (up to 100) |
 
 <details>
 <summary>Parameter reference</summary>
@@ -435,9 +457,11 @@ caido-mcp-server/
     cli/          Standalone CLI
   internal/
     auth/         OAuth device flow, PAT support, token store, auto-refresh
-    httputil/     HTTP parsing, CRLF normalization, URL handling
-    replay/       Replay session management, response polling
+    httputil/     HTTP parsing, fingerprinting, response diff, CRLF normalization
+    replay/       Replay session management, cookie jar, response polling
+    resources/    MCP read-only resources (requests, sessions, sitemap, findings)
     tools/        MCP tool definitions (one file per tool)
+    testutil/     Mock GraphQL server, MCP test helpers, fixtures
 ```
 
 Both `cmd/mcp` and `cmd/cli` share `internal/` packages. The project uses [caido-community/sdk-go](https://github.com/caido-community/sdk-go) for all GraphQL communication with Caido.
@@ -471,8 +495,8 @@ To report a security issue, open a GitHub issue or contact the maintainer direct
 
 1. Fork the repo
 2. Create a feature branch
-3. `go build ./...` and `go test ./...`
-4. Open a PR
+3. `go build ./...` and `go test ./... -race`
+4. Open a PR (CI runs build, test, vet, staticcheck)
 
 Built with [caido-community/sdk-go](https://github.com/caido-community/sdk-go) and [modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk).
 
