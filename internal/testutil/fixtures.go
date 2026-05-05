@@ -108,7 +108,13 @@ func GetReplaySessionResponse(sessionID, activeEntryID string) map[string]any {
 	return map[string]any{
 		"replaySession": map[string]any{
 			"id":          sessionID,
+			"name":        "test-session",
 			"activeEntry": activeEntry,
+			"collection":  map[string]any{"id": "col-1"},
+			"entries": map[string]any{
+				"edges":    []any{},
+				"pageInfo": map[string]any{"hasNextPage": false},
+			},
 		},
 	}
 }
@@ -124,14 +130,35 @@ func StartReplayTaskResponse() map[string]any {
 func GetReplayEntryResponse(entryID, requestID string, statusCode int, body string) map[string]any {
 	return map[string]any{
 		"replayEntry": map[string]any{
-			"id": entryID,
+			"id":        entryID,
+			"raw":       RawHTTPRequest("GET", "/test", "example.com"),
+			"error":     nil,
+			"createdAt": int64(1714900000000),
+			"connection": map[string]any{
+				"host":  "example.com",
+				"port":  443,
+				"isTls": true,
+			},
+			"settings": map[string]any{
+				"placeholders":        []any{},
+				"updateContentLength": true,
+			},
 			"request": map[string]any{
-				"id":  requestID,
-				"raw": RawHTTPRequest("GET", "/test", "example.com"),
+				"id":        requestID,
+				"method":    "GET",
+				"host":      "example.com",
+				"port":      443,
+				"path":      "/test",
+				"query":     "",
+				"isTls":     true,
+				"raw":       RawHTTPRequest("GET", "/test", "example.com"),
+				"createdAt": int64(1714900000000),
 				"response": map[string]any{
+					"id":            "resp-" + requestID,
 					"statusCode":    statusCode,
 					"roundtripTime": 100,
 					"raw":           RawHTTPResponse(statusCode, body),
+					"length":        len(body),
 				},
 			},
 		},

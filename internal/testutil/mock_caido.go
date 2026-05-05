@@ -9,12 +9,12 @@ import (
 
 type MockHandler struct {
 	mu        sync.Mutex
-	responses map[string]json.RawMessage
+	responses map[string][]json.RawMessage
 }
 
 func NewMockHandler() *MockHandler {
 	return &MockHandler{
-		responses: make(map[string]json.RawMessage),
+		responses: make(map[string][]json.RawMessage),
 	}
 }
 
@@ -22,7 +22,7 @@ func (m *MockHandler) On(operationName string, response any) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	data, _ := json.Marshal(response)
-	m.responses[operationName] = json.RawMessage(data)
+	m.responses[operationName] = append(m.responses[operationName], json.RawMessage(data))
 }
 
 func (m *MockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -41,10 +41,18 @@ func (m *MockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m.mu.Lock()
-	resp, ok := m.responses[req.OperationName]
+	queue, ok := m.responses[req.OperationName]
+	var resp json.RawMessage
+	if ok && len(queue) > 0 {
+		resp = queue[0]
+		if len(queue) > 1 {
+			m.responses[req.OperationName] = queue[1:]
+		}
+		// When only one item left, keep it for repeated calls
+	}
 	m.mu.Unlock()
 
-	if !ok {
+	if !ok || resp == nil {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]any{
 			"errors": []map[string]string{

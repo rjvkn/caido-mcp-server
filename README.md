@@ -13,6 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
   <a href="https://github.com/c0tton-fluff/caido-mcp-server/releases"><img src="https://img.shields.io/github/v/release/c0tton-fluff/caido-mcp-server" alt="Release"></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-8A2BE2" alt="MCP"></a>
+  <a href="https://github.com/c0tton-fluff/caido-mcp-server/actions/workflows/ci.yml"><img src="https://github.com/c0tton-fluff/caido-mcp-server/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 ---
