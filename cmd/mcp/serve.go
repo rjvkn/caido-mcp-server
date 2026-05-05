@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/c0tton-fluff/caido-mcp-server/internal/auth"
+	"github.com/c0tton-fluff/caido-mcp-server/internal/resources"
 	"github.com/c0tton-fluff/caido-mcp-server/internal/tools"
 	caido "github.com/caido-community/sdk-go"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -146,6 +147,9 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 	// Filters
 	tools.RegisterListFiltersTool(server, client)
+
+	// Resources (read-only data for agent context)
+	resources.RegisterAll(server, client)
 
 	if err := server.Run(ctx, &mcp.StdioTransport{}); err != nil {
 		return fmt.Errorf("server error: %w", err)
