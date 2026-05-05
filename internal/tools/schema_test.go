@@ -18,6 +18,7 @@ var allRegistrations = []struct {
 	{"caido_get_request", tools.RegisterGetRequestTool},
 	{"caido_send_request", tools.RegisterSendRequestTool},
 	{"caido_batch_send", tools.RegisterBatchSendTool},
+	{"caido_create_replay_session", tools.RegisterCreateReplaySessionTool},
 	{"caido_list_replay_sessions", tools.RegisterListReplaySessionsTool},
 	{"caido_get_replay_entry", tools.RegisterGetReplayEntryTool},
 	{"caido_list_automate_sessions", tools.RegisterListAutomateSessionsTool},

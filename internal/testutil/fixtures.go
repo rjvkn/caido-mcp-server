@@ -127,6 +127,17 @@ func StartReplayTaskResponse() map[string]any {
 	}
 }
 
+func RenameReplaySessionResponse(sessionID, name string) map[string]any {
+	return map[string]any{
+		"renameReplaySession": map[string]any{
+			"session": map[string]any{
+				"id":   sessionID,
+				"name": name,
+			},
+		},
+	}
+}
+
 func GetReplayEntryResponse(entryID, requestID string, statusCode int, body string) map[string]any {
 	return map[string]any{
 		"replayEntry": map[string]any{
