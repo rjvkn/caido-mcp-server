@@ -12,5 +12,5 @@ dist/
 ~/.caido-mcp/
 .claude/
 
-mcp
-cli
+/mcp
+/cli

@@ -96,11 +96,21 @@ func runServe(cmd *cobra.Command, args []string) error {
 	// Replay (Send Requests)
 	tools.RegisterSendRequestTool(server, client)
 	tools.RegisterBatchSendTool(server, client)
+	tools.RegisterEditRequestTool(server, client)
+	tools.RegisterExportCurlTool(server, client)
 	tools.RegisterCreateReplaySessionTool(server, client)
 	tools.RegisterListReplaySessionsTool(server, client)
+	tools.RegisterDeleteReplaySessionsTool(server, client)
+	tools.RegisterMoveReplaySessionTool(server, client)
 	tools.RegisterGetReplayEntryTool(server, client)
 	tools.RegisterClearSessionCookiesTool(server, client)
 	tools.RegisterGetSessionCookiesTool(server, client)
+
+	// Replay Collections
+	tools.RegisterListReplayCollectionsTool(server, client)
+	tools.RegisterCreateReplayCollectionTool(server, client)
+	tools.RegisterRenameReplayCollectionTool(server, client)
+	tools.RegisterDeleteReplayCollectionTool(server, client)
 
 	// Findings
 	tools.RegisterListFindingsTool(server, client)
@@ -114,10 +124,15 @@ func runServe(cmd *cobra.Command, args []string) error {
 	// Scopes
 	tools.RegisterListScopesTool(server, client)
 	tools.RegisterCreateScopeTool(server, client)
+	tools.RegisterRenameScopeTool(server, client)
+	tools.RegisterDeleteScopeTool(server, client)
 
 	// Projects
 	tools.RegisterListProjectsTool(server, client)
 	tools.RegisterSelectProjectTool(server, client)
+	tools.RegisterCreateProjectTool(server, client)
+	tools.RegisterRenameProjectTool(server, client)
+	tools.RegisterDeleteProjectTool(server, client)
 
 	// Workflows
 	tools.RegisterListWorkflowsTool(server, client)
@@ -127,6 +142,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	// Environments
 	tools.RegisterListEnvironmentsTool(server, client)
 	tools.RegisterSelectEnvironmentTool(server, client)
+	tools.RegisterCreateEnvironmentTool(server, client)
+	tools.RegisterDeleteEnvironmentTool(server, client)
 
 	// Instance
 	tools.RegisterGetInstanceTool(server, client)
@@ -147,6 +164,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 	// Filters
 	tools.RegisterListFiltersTool(server, client)
+	tools.RegisterCreateFilterTool(server, client)
+	tools.RegisterDeleteFilterTool(server, client)
 
 	// Hosted Files
 	tools.RegisterListHostedFilesTool(server, client)

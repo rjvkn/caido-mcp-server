@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-05-21
+
+### Added
+- **`caido_edit_request` MCP tool** - modify an existing request (method, path, headers, body) while preserving all auth cookies and session state, then send it. The most-requested feature for AI-driven pentesting.
+- **`caido_export_curl` MCP tool** - convert any request to a ready-to-use curl command for PoC reports.
+- **Replay Collections** - full CRUD:
+  - `caido_list_replay_collections` - list all collections
+  - `caido_create_replay_collection` - create a named collection
+  - `caido_rename_replay_collection` - rename a collection
+  - `caido_delete_replay_collection` - delete a collection
+- **`caido_delete_replay_sessions`** - bulk delete replay sessions by ID
+- **`caido_move_replay_session`** - move a session between collections
+- **Scope management** - full lifecycle:
+  - `caido_rename_scope` - rename a scope
+  - `caido_delete_scope` - delete a scope
+- **Project management** - full CRUD:
+  - `caido_create_project` - create a new project
+  - `caido_rename_project` - rename a project
+  - `caido_delete_project` - delete a project
+- **Environment management**:
+  - `caido_create_environment` - create a new environment
+  - `caido_delete_environment` - delete an environment
+- **Filter presets**:
+  - `caido_create_filter` - save an HTTPQL query as a named preset
+  - `caido_delete_filter` - delete a filter preset
+- **Install script auto-version** - `install.sh` now auto-detects the latest release via GitHub API (fixes #19, #20)
+
+### Changed
+- Tool count: 42 -> 60 (18 new tools)
+- Full CRUD coverage across all Caido resources (scopes, projects, environments, filters, replay collections)
+- Every Caido SDK operation is now exposed as an MCP tool
+
 ## [2.0.0] - 2026-05-05
 
 ### Added
