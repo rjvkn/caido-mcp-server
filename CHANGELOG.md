@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [4.0.0] - 2026-06-02
 
 ### Added
-- **WebSocket history (read)** - exposes the WebSocket tab via raw GraphQL (the Go SDK v0.5.0 does not wrap stream queries):
+- **WebSocket history (read)** - exposes the WebSocket tab (the Go SDK did not wrap stream queries; see SDK alignment below):
   - `caido_list_ws_streams` - list WebSocket streams (connections), filterable by scope
   - `caido_list_ws_messages` - list frames of a stream with direction (CLIENT/SERVER), format (TEXT/BINARY), and decoded body (base64 `Blob` decoded, truncated to `body_limit`)
 - **`caido_convert_body`** - convert a request body between JSON, form-urlencoded, XML, and multipart/form-data. Pure stdlib; flat objects are lossless, nested JSON uses bracket notation (`a[b]=c`).
