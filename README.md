@@ -22,7 +22,7 @@
 
 Two ways to interact with your Caido proxy:
 
-- **MCP Server** - expose 60 tools and 4 read-only resources to AI assistants (Claude Code, Cursor, etc.) via the Model Context Protocol
+- **MCP Server** - expose 62 tools and 4 read-only resources to AI assistants (Claude Code, Cursor, etc.) via the Model Context Protocol
 - **CLI** - standalone terminal client for pentesters who prefer the command line
 
 Both share the same auth token, the same Go SDK, and the same codebase.
@@ -141,7 +141,7 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 "What's in scope?"
 ```
 
-### MCP Tools (60)
+### MCP Tools (62)
 
 | Tool | Description |
 |------|-------------|
@@ -205,6 +205,8 @@ This opens your browser for OAuth authentication and saves the token to `~/.caid
 | `caido_list_tasks` | List running background tasks |
 | `caido_cancel_task` | Cancel a running task by ID |
 | `caido_list_plugins` | List installed plugin packages |
+| `caido_list_ws_streams` | List WebSocket streams (connections) from the WebSocket tab |
+| `caido_list_ws_messages` | List WebSocket frames for a stream (direction/format/decoded body) |
 
 ### MCP Resources (4)
 

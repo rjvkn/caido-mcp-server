@@ -105,6 +105,10 @@ var allTools = []registerFunc{
 
 	// Plugins
 	RegisterListPluginsTool,
+
+	// WebSocket History (read)
+	RegisterListWsStreamsTool,
+	RegisterListWsMessagesTool,
 }
 
 // RegisterAll registers every tool on the server and returns the number

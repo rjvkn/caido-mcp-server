@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **WebSocket history (read)** - exposes the WebSocket tab via raw GraphQL (the Go SDK v0.5.0 does not wrap stream queries):
+  - `caido_list_ws_streams` - list WebSocket streams (connections), filterable by scope
+  - `caido_list_ws_messages` - list frames of a stream with direction (CLIENT/SERVER), format (TEXT/BINARY), and decoded body (base64 `Blob` decoded, truncated to `body_limit`)
+
 ## [3.0.0] - 2026-05-21
 
 ### Added
