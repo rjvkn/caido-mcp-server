@@ -126,6 +126,10 @@ var allTools = []registerFunc{
 // RegisterAll registers every tool on the server and returns the number
 // of tools registered.
 func RegisterAll(server *mcp.Server, client *caido.Client) int {
+	// Normalize the input schemas advertised to clients (see
+	// normalizeToolSchemas): params must not be ["null", <type>] unions, which
+	// several MCP clients mis-serialize.
+	server.AddReceivingMiddleware(normalizeToolSchemas())
 	for _, register := range allTools {
 		register(server, client)
 	}
