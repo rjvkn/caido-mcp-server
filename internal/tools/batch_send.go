@@ -22,11 +22,12 @@ type BatchSendInput struct {
 
 // BatchRequestItem is a single request in the batch.
 type BatchRequestItem struct {
-	Label string `json:"label" jsonschema:"required,Identifier for this request in results (e.g. owner, cross, noauth, val-1)"`
-	Raw   string `json:"raw" jsonschema:"required,Full raw HTTP request including headers and body"`
-	Host  string `json:"host,omitempty" jsonschema:"Target host (overrides Host header)"`
-	Port  int    `json:"port,omitempty" jsonschema:"Target port (default based on TLS)"`
-	TLS   *bool  `json:"tls,omitempty" jsonschema:"Use HTTPS (default true)"`
+	Label     string `json:"label" jsonschema:"required,Identifier for this request in results (e.g. owner, cross, noauth, val-1)"`
+	Raw       string `json:"raw" jsonschema:"required,Full raw HTTP request including headers and body"`
+	Host      string `json:"host,omitempty" jsonschema:"Target host (overrides Host header)"`
+	Port      int    `json:"port,omitempty" jsonschema:"Target port (default based on TLS)"`
+	TLS       *bool  `json:"tls,omitempty" jsonschema:"Use HTTPS (default true)"`
+	SessionID string `json:"sessionId,omitempty" jsonschema:"Replay session ID for cookie jar (auto-injects session cookies and persists Set-Cookie across calls sharing the same ID)"`
 }
 
 // BatchSendResult mirrors replay.BatchResult with the fingerprint-expansion
@@ -89,11 +90,12 @@ func batchSendHandler(
 		batchReqs := make([]replay.BatchRequest, n)
 		for i, r := range input.Requests {
 			batchReqs[i] = replay.BatchRequest{
-				Label: r.Label,
-				Raw:   r.Raw,
-				Host:  r.Host,
-				Port:  r.Port,
-				TLS:   r.TLS,
+				Label:     r.Label,
+				Raw:       r.Raw,
+				Host:      r.Host,
+				Port:      r.Port,
+				TLS:       r.TLS,
+				SessionID: r.SessionID,
 			}
 		}
 
@@ -181,7 +183,7 @@ func RegisterBatchSendTool(
 ) {
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "caido_batch_send",
-		Description: `Send multiple HTTP requests in parallel. Use for BAC token sweeps, parameter fuzzing, or endpoint sweeps. Max 50 per batch. Returns statusCode, headers, and a response fingerprint (title, redirect target, cookie names, word count) per request; body text is omitted by default to save tokens (set includeBody:true to include it). Pass marker to flag reflection per result.`,
+		Description: `Send multiple HTTP requests in parallel. Use for BAC token sweeps, parameter fuzzing, or endpoint sweeps. Max 50 per batch. Returns statusCode, headers, and a response fingerprint (title, redirect target, cookie names, word count) per request; body text is omitted by default to save tokens (set includeBody:true to include it). Pass marker to flag reflection per result. Set sessionId on each request to auto-inject session cookies and persist Set-Cookie across calls sharing the same ID.`,
 		Annotations: writeAnn(false, false, true),
 	}, batchSendHandler(client))
 }

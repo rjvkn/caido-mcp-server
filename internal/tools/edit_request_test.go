@@ -140,18 +140,10 @@ func TestEditRequestRemoveHeader(t *testing.T) {
 	}
 }
 
-// TestEditRequestReplaceBody pins the current behavior of replaceBody.
+// TestEditRequestReplaceBody pins the behavior of replaceBody.
 //
-// KNOWN BUG (characterized here, not fixed - edit_request.go is owned
-// elsewhere in this wave): when newBody is non-empty, replaceBody emits a
-// DOUBLED CRLF ("\r\n\r\n\r\n\r\n") between the last header and the body.
-// InjectHeader is handed a header block whose trailing "\r\n\r\n" has been
-// stripped (result[:len(result)-4]), so InjectHeader takes its idx<0 path
-// and appends its own "\r\n\r\n"; replaceBody then appends a second
-// separator. The Content-Length VALUE is computed correctly (== len(newBody)),
-// but the body framing is broken (the wire body becomes "\r\n\r\n"+newBody
-// while Content-Length claims len(newBody)). When edit_request.go is fixed to
-// emit a single separator, update the "injects" expectation below.
+// The header-body separator ("\r\n\r\n") must appear exactly once between
+// the last header line and the body. Content-Length must equal len(newBody).
 func TestEditRequestReplaceBody(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -161,10 +153,10 @@ func TestEditRequestReplaceBody(t *testing.T) {
 		checkCL bool
 	}{
 		{
-			name:    "injects Content-Length and replaces body (doubled CRLF)",
+			name:    "injects Content-Length and replaces body",
 			raw:     "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\nhello",
 			newBody: "abc",
-			want:    "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Length: 3\r\n\r\n\r\n\r\nabc",
+			want:    "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Length: 3\r\n\r\nabc",
 			checkCL: true,
 		},
 		{

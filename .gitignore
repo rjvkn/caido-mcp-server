@@ -18,3 +18,8 @@ coverage.out
 
 /mcp
 /cli
+
+# Tool scratch output
+.codex/
+graphify-out/
+.aider*

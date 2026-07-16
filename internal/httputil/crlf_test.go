@@ -1,6 +1,9 @@
 package httputil
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestNormalizeCRLF_LiteralEscapes(t *testing.T) {
 	input := `GET / HTTP/1.1\r\nHost: example.com\r\n\r\n`
@@ -16,6 +19,19 @@ func TestNormalizeCRLF_AlreadyCorrect(t *testing.T) {
 	got := NormalizeCRLF(input)
 	if got != input {
 		t.Fatalf("got %q, want %q", got, input)
+	}
+}
+
+func TestNormalizeCRLF_BodyWithLiteralEscapes(t *testing.T) {
+	// A raw request whose JSON body contains the literal four-character
+	// sequence \r\n (valid JSON escape) must NOT have those bytes converted
+	// to real CRLF. The input already has real CRLF in the headers, so
+	// escape interpretation is skipped entirely.
+	body := `{"m":"hello\r\nworld"}`
+	input := "POST / HTTP/1.1\r\nHost: example.com\r\nContent-Length: 22\r\n\r\n" + body
+	got := NormalizeCRLF(input)
+	if !strings.Contains(got, body) {
+		t.Fatalf("NormalizeCRLF corrupted body with literal escapes:\n got %q", got)
 	}
 }
 

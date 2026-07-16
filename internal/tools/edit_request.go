@@ -106,14 +106,15 @@ func replaceBody(raw, newBody string) string {
 	}
 
 	headers := raw[:idx]
-	result := removeHeader(headers+separator, "content-length")
+	headers = removeHeader(headers+separator, "content-length")
+	headers = strings.TrimSuffix(headers, separator)
 
-	if newBody != "" {
-		result = httputil.InjectHeader(result[:len(result)-4], "Content-Length", strconv.Itoa(len(newBody))) + separator
-		return result + newBody
+	if newBody == "" {
+		return headers + separator
 	}
 
-	return result
+	withCL := httputil.InjectHeader(headers+separator, "Content-Length", strconv.Itoa(len(newBody)))
+	return withCL + newBody
 }
 
 func editRequestHandler(

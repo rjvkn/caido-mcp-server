@@ -16,7 +16,7 @@ var sendCmd = &cobra.Command{
 	Long: `Send an HTTP request through Caido's Replay API.
 
 Builds the raw HTTP request from method, URL, headers, and body.
-Same interface as 'burp send'.
+Same interface as 'caido raw' with structured argument building.
 
 Examples:
   caido send GET https://target.com/api/users

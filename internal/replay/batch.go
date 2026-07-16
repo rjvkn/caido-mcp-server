@@ -15,11 +15,12 @@ import (
 
 // BatchRequest is a single request in a batch.
 type BatchRequest struct {
-	Label string
-	Raw   string // raw HTTP, will be CRLF-normalized
-	Host  string // override Host header
-	Port  int    // override port
-	TLS   *bool  // override TLS (default true)
+	Label     string
+	Raw       string // raw HTTP, will be CRLF-normalized
+	Host      string // override Host header
+	Port      int    // override port
+	TLS       *bool  // override TLS (default true)
+	SessionID string // cookie jar key; empty = no cookie jar
 }
 
 // BatchResult is the result of a single request in a batch.
@@ -138,6 +139,20 @@ func executeSingle(
 		port = httputil.DefaultPort(useTLS)
 	}
 
+	// Cookie jar: inject session cookies when a session ID is provided
+	// and the raw request does not already carry a Cookie header.
+	if br.SessionID != "" {
+		reqURL := httputil.RequestURL(host, port, useTLS, raw)
+		if !httputil.HasHeader(raw, "Cookie") {
+			cookies := DefaultCookieStore().Cookies(br.SessionID, reqURL)
+			if len(cookies) > 0 {
+				raw = httputil.InjectHeader(
+					raw, "Cookie", httputil.BuildCookieHeader(cookies),
+				)
+			}
+		}
+	}
+
 	// Create a session seeded with this request (0.57: a fresh session
 	// has the request as its sole entry, ready to send) and start it.
 	conn := caido.ReplayConnection{Host: host, Port: port, IsTLS: useTLS}
@@ -175,6 +190,20 @@ func executeSingle(
 			result.Response = httputil.ParseBase64(
 				resp.Raw, true, true, 0, bodyLimit,
 			)
+
+			// Persist Set-Cookie back into the session jar.
+			if br.SessionID != "" {
+				rawDecoded, rawErr := base64.StdEncoding.DecodeString(resp.Raw)
+				if rawErr == nil {
+					setCookies := httputil.ExtractRawSetCookies(rawDecoded)
+					if len(setCookies) > 0 {
+						reqURL := httputil.RequestURL(host, port, useTLS, raw)
+						_ = DefaultCookieStore().SetCookies(
+							br.SessionID, reqURL, setCookies,
+						)
+					}
+				}
+			}
 		}
 	}
 

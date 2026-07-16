@@ -1,10 +1,14 @@
 # Caido MCP Server TODO
 
-- [ ] [2026-04-09] Add race condition support (research Caido API for low-level socket access)
-- [ ] [2026-04-09] Fix oneof workarounds in delete_findings.go and export_findings.go when genqlient adds omitempty for nullable list fields
-- [x] [2026-06-02] Implement WebSocket history read tools (list_ws_streams, list_ws_messages) via raw GraphQL for next release (done in-house; PR #25's 33-tool dump declined as scope creep)
-- [ ] [2026-05-21] Add unit tests for edit_request and export_curl tools
-- [ ] [2026-05-21] Add CI release workflow (auto-build + attach binaries on tag push)
-- [ ] [2026-05-21] Body format converter tool (JSON/form-urlencoded/XML/multipart) - Caido v0.54.0 feature
-- [ ] [2026-05-21] Increase test coverage from 14% to 60%+ (Findings, Intercept, Workflows, Tamper all untested)
-- [ ] [2026-05-21] Extract hardcoded limits (50 batch, 20 concurrency, 1MB body) to named constants
+> Resume: Nothing pending -- merged PRs #36/#37/#38 (issue #34 auto-closed), main at 0b49c28 (v4.2.1-12), 0/0, CI green, binaries rebuilt+smoke-tested. Next feature work: implement `caido_validate_httpql` (roadmap Chunk 6) per docs/plans/2026-07-08-codebase-hardening.md.
+
+- [x] [2026-07-14] DONE: reviewed+tested+merged 3 community PRs from fork rjvkn (squash). #37 strip null-union schemas via tools/list middleware (fixes #34 JSON-Parse-EOF on optional pointer/slice params; red-proof verified); #36 create_environment empty non-nil Variables slice; #38 CAIDO_PAT -> CAIDO_ACCESS_TOKEN rename + doc fix (deprecated fallback kept). Issue #34 auto-closed COMPLETED.
+
+- [~] [2026-04-09] genqlient oneof omitempty: BLOCKED upstream. v0.8.1 is latest (no fix). Only create_tamper_rule.go uses the map[string]any workaround (delete/export_findings use clean typed structs). Re-check on genqlient v0.9.x.
+- [ ] [2026-06-10] StreamQL protocol-filter syntax is undocumented (protocol.eq:"ws" rejected). list_ws_streams filters WS client-side - revisit if Caido documents StreamQL protocol filtering for server-side efficiency.
+- [ ] [2026-06-23] Confirm caido_send_request can actually DRIVE a WS-kind replay session end-to-end (PR #28 enabled WS session creation but the downstream send path on WS is unverified).
+- [ ] [2026-07-08] Extract remaining batch magic numbers (50 max batch, 20 max concurrency) in batch_send.go to named constants (1MB raw-body + list limits already extracted to helpers.go this session).
+- [ ] [2026-07-08] Deferred v2 roadmap features (plan: docs/plans/2026-07-08-codebase-hardening.md): caido_validate_httpql (Chunk 6), MCP progress notifications for batch_send/large result sets (Chunk 7), structured logging --log-json + --audit-log with correlation IDs (Chunk 5 part 2).
+- [ ] [2026-07-08] Dependabot will keep proposing go-sdk bumps; adopt them via the proper path (bump + accept isError error-surfacing, keep expectMissingRequiredRejected dual-form) rather than the raw auto-PR. Add an ignore rule only if the noise becomes a problem.
+- [x] [2026-07-09] DONE (12258c8): wired .githooks/pre-push (gofmt/vet/golangci-lint/go test -race, mirrors CI lint+test). Verified per-stage: gofmt/golangci-lint/go test each abort exit 1 on injected violations; clean=0 (go vet unexercised, same set -e). Enable per clone: git config core.hooksPath .githooks. (aider auto-test config added 5f11a1e then removed 10c0708 -- aider retired.) RESIDUAL: gate does NOT catch a VACUOUS test (63dfeeb passed go test); still need a human load-bearing-test review of LLM-authored tests.
+- [ ] [2026-07-09] main is NOT branch-protected (gh api .../branches/main/protection = 404; public repo, direct pushes allowed). The pre-push hook + CI are friction-reduction, not enforcement. OPTIONAL: enable branch protection requiring the test+lint CI checks before merge to make it real enforcement -- deferred (would block own direct pushes, user's call).

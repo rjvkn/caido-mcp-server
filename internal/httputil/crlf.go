@@ -3,7 +3,14 @@ package httputil
 import "strings"
 
 func NormalizeCRLF(raw string) string {
-	raw = strings.ReplaceAll(raw, `\r\n`, "\r\n")
+	// Only interpret literal \r\n escapes when the input has no real CR
+	// or LF bytes. This supports CLI usage where users type \r\n
+	// literally, while protecting body content that legitimately contains
+	// the literal sequence (e.g. JSON values with escaped
+	// carriage-return/newline) when the input already has real CRLF.
+	if !strings.ContainsRune(raw, '\r') && !strings.ContainsRune(raw, '\n') {
+		raw = strings.ReplaceAll(raw, `\r\n`, "\r\n")
+	}
 	raw = strings.ReplaceAll(raw, "\r\n", "\n")
 	raw = strings.ReplaceAll(raw, "\n", "\r\n")
 	if !strings.HasSuffix(raw, "\r\n\r\n") {

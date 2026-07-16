@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -51,26 +50,6 @@ type CookieJarStatus struct {
 	InjectedCookies []string `json:"injectedCookies,omitempty"`
 	StoredCookies   []string `json:"storedCookies,omitempty"`
 	Skipped         string   `json:"skipped,omitempty"`
-}
-
-// buildRequestURL synthesizes the *url.URL targeted by raw, used for
-// RFC 6265 cookie matching against the session jar.
-func buildRequestURL(host string, port int, useTLS bool, raw string) *url.URL {
-	scheme := "http"
-	if useTLS {
-		scheme = "https"
-	}
-	defaultPort := httputil.DefaultPort(useTLS)
-	hostHeader := host
-	if port != 0 && port != defaultPort {
-		hostHeader = fmt.Sprintf("%s:%d", host, port)
-	}
-	target := httputil.ExtractPath(raw)
-	u, err := url.Parse(scheme + "://" + hostHeader + target)
-	if err != nil {
-		return &url.URL{Scheme: scheme, Host: hostHeader, Path: "/"}
-	}
-	return u
 }
 
 // cookiesToNames extracts the Name field from each cookie for output.
@@ -150,7 +129,7 @@ func sendRequestHandler(
 			useJar = *input.UseCookieJar
 		}
 		jarStatus := &CookieJarStatus{Enabled: useJar}
-		reqURL := buildRequestURL(host, port, useTLS, raw)
+		reqURL := httputil.RequestURL(host, port, useTLS, raw)
 
 		if useJar {
 			if httputil.HasHeader(raw, "Cookie") {
